@@ -52,7 +52,7 @@ router.get("/employee/:id", (req, res) => {
 });
 
 // Create an employee
-router.post("/employee", async(req, res) => {
+router.post("/employee", async (req, res) => {
   const roles = req.body.roles;
   const employees = req.body.employees;
 
@@ -89,15 +89,15 @@ router.post("/employee", async(req, res) => {
       message: "Please choose their manager",
       when: (answers) => answers.has_manager,
       choices: () => {
-        let mng = employees.map((manager) => manager.first_name + " " + manager.last_name);
+        let mng = employees.map(
+          (manager) => manager.first_name + " " + manager.last_name
+        );
         mng = [...new Set(mng)];
         return mng;
       },
     },
   ]);
 
-
-  
   //Filter the chosen role to get its role_id
   let role_id;
   roles.filter((role) => {
@@ -120,12 +120,7 @@ router.post("/employee", async(req, res) => {
   }
 
   const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
-  const params = [
-    data.emp_first_name,
-    data.emp_last_name,
-    role_id,
-    manager_id,
-  ];
+  const params = [data.emp_first_name, data.emp_last_name, role_id, manager_id];
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -140,11 +135,57 @@ router.post("/employee", async(req, res) => {
 });
 
 // Update a role of an employee
-router.put("/employee/:id", (req, res) => {
+router.post("/updateemployeerole", async(req, res) => {
+  const roles = req.body.roles;
+  const employees = req.body.employees;
+
+  //Prompt for employee data to update
+  let data = await inquirer.prompt([
+    {
+      type: "list",
+      name: "updateemp",
+      message: "Please choose the employee to update",
+      choices: () => {
+        let emps = employees.map((emp) => emp.first_name + " " + emp.last_name);
+        emps = [...new Set(emps)];
+        return emps;
+      },
+    }
+  ])
+
+  //Filter the chosen employee to update
+  let emp_id;
+  employees.filter((emp) => {
+    if (emp.first_name + " " + emp.last_name === data.updateemp) {
+      emp_id = emp.id;
+    }
+  });
+
+  data = await inquirer.prompt([
+    {
+      type: "list",
+      name: "emp_role",
+      message: "What is their new role?",
+      choices: () => {
+        let rol = roles.map((role) => role.title);
+        rol = [...new Set(rol)];
+        return rol;
+      },
+    },
+  ]);
+
+  //Filter the chosen role to get its role_id
+  let role_id;
+  roles.filter((role) => {
+    if (role.title === data.emp_role) {
+      role_id = role.id;
+    }
+  });
+
   const sql = `UPDATE employee SET role_id = ? 
                WHERE id = ?`;
 
-  const params = [req.body.role_id, req.params.id];
+  const params = [role_id, emp_id];
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -164,7 +205,7 @@ router.put("/employee/:id", (req, res) => {
 });
 
 // Delete an employee
-router.post("/deleteemployee", async(req, res) => {
+router.post("/deleteemployee", async (req, res) => {
   const employees = req.body.listemployees;
 
   //Prompt for employee data to delete
@@ -179,7 +220,7 @@ router.post("/deleteemployee", async(req, res) => {
         return emps;
       },
     },
-  ])
+  ]);
 
   //Filter the chosen employee to delete
   let emp_id;
@@ -188,7 +229,7 @@ router.post("/deleteemployee", async(req, res) => {
       emp_id = emp.id;
     }
   });
-  
+
   const sql = `DELETE FROM employee WHERE id = ?`;
 
   const params = emp_id;

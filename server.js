@@ -48,6 +48,7 @@ const firstPrompt = async () => {
         "Remove a Role",
         "Remove a Department",
         "View Budget by Department",
+        "View Employees by Department",
         "Quit",
       ],
     })
@@ -160,6 +161,35 @@ const firstPrompt = async () => {
             .catch((err) => console.log(err));
           break;
         case "Update an Employee Role":
+          url = "http://localhost:3001/api/role";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((roles) => {
+              url = "http://localhost:3001/api/employees";
+              axios({
+                method: "GET",
+                url,
+                body: {},
+              })
+                .then((emps) => {
+                  url = "http://localhost:3001/api/updateemployeerole";
+                  axios({
+                    method: "POST",
+                    url,
+                    data: { roles: roles.data.data, employees: emps.data.data },
+                  })
+                    .then((response) => {
+                      console.table(response.data.data);
+                      firstPrompt();
+                    })
+                    .catch((err) => console.log(err));
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
           break;
         case "Remove an Employee":
           url = "http://localhost:3001/api/employees";
@@ -227,7 +257,40 @@ const firstPrompt = async () => {
             })
             .catch((err) => console.log(err));
           break;
-        case "":
+        case "View Budget by Department":
+          url = "http://localhost:3001/api/departmentbudget";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((response) => {
+              console.table(response.data.data);
+              firstPrompt();
+            })
+            .catch((err) => console.log(err));
+          break;
+        case "View Employees by Department":
+          url = "http://localhost:3001/api/department";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((depts) => {
+              url = "http://localhost:3001/api/employeesdepartment";
+              axios({
+                method: "POST",
+                url,
+                data: { listdepts: depts.data.data },
+              })
+                .then((response) => {
+                  console.table(response.data.data);
+                  firstPrompt();
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
           break;
         case "Quit":
           db.end();
