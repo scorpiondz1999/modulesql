@@ -95,6 +95,9 @@ router.post("/employee", async(req, res) => {
       },
     },
   ]);
+
+
+  
   //Filter the chosen role to get its role_id
   let role_id;
   roles.filter((role) => {
