@@ -107,11 +107,34 @@ depts.filter(dept => {
   });
 });
 
-
 // Delete a role
-router.delete("/role/:id", (req, res) => {
+router.post("/deleterole", async(req, res) => {
+  const roles = req.body.listroles;
+
+  //Prompt for employee data to delete
+  const data = await inquirer.prompt([
+    {
+      type: "list",
+      name: "delrole",
+      message: "Please choose the role to delete",
+      choices: () => {
+        let rol = roles.map((r) => r.title);
+        rol = [...new Set(rol)];
+        return rol;
+      },
+    },
+  ])
+
+  //Filter the chosen role to delete
+  let role_id;
+  roles.filter((r) => {
+    if (r.title === data.delrole) {
+      role_id = r.id;
+    }
+  });
+  
   const sql = `DELETE FROM role WHERE id = ?`;
-  const params = req.params.id;
+  const params = role_id;
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -128,6 +151,9 @@ router.delete("/role/:id", (req, res) => {
       });
     }
   });
+  
 });
+
+
 
 module.exports = router;

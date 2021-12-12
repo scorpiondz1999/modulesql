@@ -18,7 +18,7 @@ router.get("/employees", (req, res) => {
   db.query(sql, (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
-      return;
+      return null;
     }
     res.json({
       message: "success",
@@ -164,10 +164,34 @@ router.put("/employee/:id", (req, res) => {
 });
 
 // Delete an employee
-router.delete("/employee/:id", (req, res) => {
+router.post("/deleteemployee", async(req, res) => {
+  const employees = req.body.listemployees;
+
+  //Prompt for employee data to delete
+  const data = await inquirer.prompt([
+    {
+      type: "list",
+      name: "delemp",
+      message: "Please choose the employee to delete",
+      choices: () => {
+        let emps = employees.map((emp) => emp.first_name + " " + emp.last_name);
+        emps = [...new Set(emps)];
+        return emps;
+      },
+    },
+  ])
+
+  //Filter the chosen employee to delete
+  let emp_id;
+  employees.filter((emp) => {
+    if (emp.first_name + " " + emp.last_name === data.delemp) {
+      emp_id = emp.id;
+    }
+  });
+  
   const sql = `DELETE FROM employee WHERE id = ?`;
 
-  const params = req.params.id;
+  const params = emp_id;
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -179,7 +203,6 @@ router.delete("/employee/:id", (req, res) => {
     } else {
       res.json({
         message: "deleted",
-        changes: result.affectedRows,
         id: params,
       });
     }

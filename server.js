@@ -15,21 +15,21 @@ app.use("/api", apiRoutes);
 
 // Default response for request (Not Found)
 app.use((req, res) => {
-        res.status(404).end();
-      });
-      
-      // Start server when DB connected 
-      db.connect((err) => {
-        if (err) return console.log(err);
-        console.log("Database connected.");
-        firstPrompt();
-      });
-      
-      app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-      });
+  res.status(404).end();
+});
 
-      // function for action to take
+// Start server when DB connected
+db.connect((err) => {
+  if (err) return console.log(err);
+  console.log("Database connected.");
+  firstPrompt();
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// function for action to take
 const firstPrompt = async () => {
   inquirer
     .prompt({
@@ -46,6 +46,8 @@ const firstPrompt = async () => {
         "Update an Employee Role",
         "Remove an Employee",
         "Remove a Role",
+        "Remove a Department",
+        "View Budget by Department",
         "Quit",
       ],
     })
@@ -60,7 +62,7 @@ const firstPrompt = async () => {
             body: {},
           })
             .then((response) => {
-              console.log(response.data);
+              console.table(response.data.data);
               firstPrompt();
             })
             .catch((err) => console.log(err));
@@ -73,7 +75,7 @@ const firstPrompt = async () => {
             body: {},
           })
             .then((response) => {
-              console.log(response.data);
+              console.table(response.data.data);
               firstPrompt();
             })
             .catch((err) => console.log(err));
@@ -86,7 +88,7 @@ const firstPrompt = async () => {
             body: {},
           })
             .then((response) => {
-              console.log(response.data);
+              console.table(response.data.data);
               firstPrompt();
             })
             .catch((err) => console.log(err));
@@ -99,7 +101,7 @@ const firstPrompt = async () => {
             body: {},
           })
             .then((response) => {
-              console.log(response.data);
+              console.table(response.data.data);
               firstPrompt();
             })
             .catch((err) => console.log(err));
@@ -119,7 +121,7 @@ const firstPrompt = async () => {
                 data: { dept: response.data.data },
               })
                 .then((response) => {
-                  console.log(response.data);
+                  console.table(response.data.data);
                   firstPrompt();
                 })
                 .catch((err) => console.log(err));
@@ -148,7 +150,7 @@ const firstPrompt = async () => {
                     data: { roles: roles.data.data, employees: emps.data.data },
                   })
                     .then((response) => {
-                      console.log(response.data);
+                      console.table(response.data.data);
                       firstPrompt();
                     })
                     .catch((err) => console.log(err));
@@ -160,8 +162,72 @@ const firstPrompt = async () => {
         case "Update an Employee Role":
           break;
         case "Remove an Employee":
+          url = "http://localhost:3001/api/employees";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((emps) => {
+              url = "http://localhost:3001/api/deleteemployee";
+              axios({
+                method: "POST",
+                url,
+                data: { listemployees: emps.data.data },
+              })
+                .then((response) => {
+                  console.log(response.data);
+                  firstPrompt();
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
           break;
         case "Remove a Role":
+          url = "http://localhost:3001/api/role";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((roles) => {
+              url = "http://localhost:3001/api/deleterole";
+              axios({
+                method: "POST",
+                url,
+                data: { listroles: roles.data.data },
+              })
+                .then((response) => {
+                  console.log(response.data);
+                  firstPrompt();
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
+          break;
+        case "Remove a Department":
+          url = "http://localhost:3001/api/department";
+          axios({
+            method: "GET",
+            url,
+            body: {},
+          })
+            .then((depts) => {
+              url = "http://localhost:3001/api/deletedepartment";
+              axios({
+                method: "POST",
+                url,
+                data: { listdepts: depts.data.data },
+              })
+                .then((response) => {
+                  console.log(response.data);
+                  firstPrompt();
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
+          break;
+        case "":
           break;
         case "Quit":
           db.end();
